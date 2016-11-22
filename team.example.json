@@ -1,0 +1,29 @@
+{
+    "name": "JellyPizzaHackTeam",
+    "members": [
+        {
+            "name": "Jelly",
+            "surname": "Pizza",
+            "email": "jezllypizzahack@pizzaisawesome.com",
+            "birth_date": "1995-10-13",
+            "school": "Politechnika Wrocławska",
+            "department": "W4",
+            "field_of_study": "Informatyka",
+            "album_number": "420420",
+            "year": "3",
+            "size": "L"
+        },
+        {
+            "name": "Pizza",
+            "surname": "Dude",
+            "email": "jezllypizzadude@pizzaisawesome.com",
+            "birth_date": "1995-10-22",
+            "school": "Politechnika Wrocławska",
+            "department": "W4",
+            "field_of_study": "Informatyka",
+            "album_number": "696969",
+            "year": "3",
+            "size": "XXXXL"
+        }
+    ]
+}

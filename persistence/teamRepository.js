@@ -24,6 +24,16 @@
         });
       });
     }
+
+    static deleteParticipantReferences(participantId) {
+      return new Promise((resolve, reject) => {
+          Team.update({members: participantId}, {$pull: {members: participantId}}, (err, result) => {
+            if(err)
+              return reject(err);
+            resolve(result);
+          });
+      });
+    }
   }
 
   module.exports = TeamRepository;

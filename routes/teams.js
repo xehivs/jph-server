@@ -7,8 +7,8 @@
   let TeamService = require('services/teamService');
   let TeamValidator = require('validators/teamValidator');
 
-  let NEW_TEAM_URL = '/new';
-  let TEAM_URL = '/edit/:teamId';
+  let NEW_TEAM_URL = '/';
+  let TEAM_URL = '/:teamId';
 
   router.post(NEW_TEAM_URL, checkRequestData, checkNameAvailability, checkEmailsPattern, checkEmailsAvailability, newTeamPost);
   router.get(TEAM_URL, checkCredentials, getMemberDetails, teamGet);

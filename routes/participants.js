@@ -8,8 +8,8 @@
   let ParticipantService = require('services/participantService');
   let ParticipantValidator = require('validators/participantValidator');
 
-  let NEW_PARTICIPANT_URL = '/new';
-  let PARTICIPANT_URL = '/edit/:participantId';
+  let NEW_PARTICIPANT_URL = '/';
+  let PARTICIPANT_URL = '/:participantId';
 
   router.post(NEW_PARTICIPANT_URL, checkRequestData, checkEmailPattern, checkEmailAvailability, newParticipantPost);
   router.get(PARTICIPANT_URL, checkCredentials, participantGet);
@@ -32,6 +32,8 @@
       .then((res) => {
         response.status(200).send(res);
         next();
+      }, (err) => {
+        response.status(400);
       });
   }
 

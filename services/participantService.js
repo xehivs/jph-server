@@ -2,6 +2,7 @@
   'use strict';
 
   let Participant = require('persistence/models/participantEntity');
+  let TeamRepository = require('persistence/teamRepository');
   let ParticipantRepository = require('persistence/participantRepository');
   let uuid = require('uuid');
 
@@ -22,13 +23,39 @@
     }
 
     static deleteParticipant(participantId) {
-      Promise
-        .resolve(ParticipantRepository.deleteParticipantById(participantId))
-        .then((res) => {
-          resolve(res)
-        }, (err) => {
-          reject(err)
-        });
+      return new Promise((resolve, reject) => {
+        Promise
+          .all([ParticipantService.deleteParticipantFromDatabase(participantId), ParticipantService.cleanupAfterDelete(participantId)])
+          .then((res) => {
+            resolve(res);
+          }, (err) => {
+            reject(err);
+          });
+      });
+    }
+
+    static deleteParticipantFromDatabase(participantId) {
+      return new Promise((resolve, reject) => {
+        Promise
+          .resolve(ParticipantRepository.deleteParticipantById(participantId))
+          .then((res) => {
+            resolve(res)
+          }, (err) => {
+            reject(err)
+          });
+      });
+    }
+
+    static cleanupAfterDelete(participantId) {
+      return new Promise((resolve, reject) => {
+        Promise
+          .resolve(TeamRepository.deleteParticipantReferences(participantId))
+          .then((res) => {
+            resolve(res);
+          }, (err) => {
+            reject(err);
+          });
+      });
     }
   }
 

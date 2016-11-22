@@ -11,13 +11,13 @@
     static saveTeam(team) {
       let participants = TeamService._exactParticipants(team.members, team.name);
       TeamService._saveParticipants(participants);
-      TeamService._createTeam(team.name, TeamService._getMemberEmails(participants)).save();
+      TeamService._createTeam(team.name, TeamService._getMemberUuids(participants)).save();
     }
 
-    static getMemberDetails(emails) {
+    static getMemberDetails(members) {
       return new Promise((resolve) => {
         Promise
-          .resolve(ParticipantRepository.findParticipantByEmailArray(TeamService._prepareEmailQuery(emails)))
+          .resolve(ParticipantRepository.findParticipantByEmailArray(TeamService._prepareUuidQuery(members)))
           .then((members) => {
             resolve(TeamService._formatMembers(members));
           });
@@ -36,10 +36,10 @@
       return arr;
     }
 
-    static _prepareEmailQuery(members) {
+    static _prepareUuidQuery(members) {
       let arr = [];
       members.forEach((member) => {
-        arr.push({email: member});
+        arr.push({uuid: member});
       });
       return arr;
     }
@@ -52,10 +52,10 @@
       return participants;
     }
 
-    static _getMemberEmails(members) {
+    static _getMemberUuids(members) {
       let arr = [];
       members.forEach((member) => {
-          arr.push(member.email);
+          arr.push(member.uuid);
       });
       return arr;
     }

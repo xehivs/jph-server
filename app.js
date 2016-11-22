@@ -20,8 +20,8 @@
     let port = process.env.PORT || 3000;
 
     app.use('/', main);
-    app.use('/participants', participants);
-    app.use('/teams', teams);
+    app.use('/participant', participants);
+    app.use('/team', teams);
 
     app.listen(port);
     console.log('Listening on port: ' + port);

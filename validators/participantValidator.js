@@ -23,7 +23,10 @@
     }
 
     static isRequestDataOk(participant) {
-      return !!(participant.email && participant.name && participant.surname);
+      return !!(participant.email && participant.name && participant.surname
+      && participant.birth_date && participant.school && participant.department
+      && participant.field_of_study && participant.album_number && participant.year
+      && participant.size);
     }
 
     static checkCredentials(uuid) {

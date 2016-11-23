@@ -3,6 +3,7 @@
 
   let express = require('express');
   let router = express.Router();
+  let logger = require('logger');
 
   let TeamService = require('services/teamService');
 
@@ -12,18 +13,20 @@
   router.post(NEW_TEAM_URL, checkRequest, newTeamPost);
   router.get(TEAM_URL, getValidatedTeam, getMemberDetails, teamGet);
   router.delete(TEAM_URL, getValidatedTeam, teamDelete);
-  router.update(TEAM_URL, getValidatedTeam, teamUpdate);
+  router.put(TEAM_URL, getValidatedTeam, teamUpdate);
 
   let service = new TeamService();
 
   function newTeamPost(request, response, next) {
     service.saveTeam(request.body);
     response.sendStatus(201);
+    logger.debug('POST - new team created successfully');
     next();
   }
 
   function teamGet(request, response, next) {
     response.status(200).send(request.team);
+    logger.debug('GET - team information retrieved');
     next();
   }
 
@@ -32,6 +35,7 @@
       .resolve(service.deleteTeam(request.team.id, request.team.name))
       .then(() => {
         response.status(200).send('Successfully deleted team');
+        logger.debug('DELETE - successfully deleted team');
         next();
       }, () => {
         response(400);
@@ -59,10 +63,13 @@
             name: res.name,
             members: res.members
           };
+          logger.debug('Validated team code successfully');
           next();
         },
         () => {
           response.sendStatus(401);
+          logger.debug('Invalid team code');
+          next();
         });
   }
 
@@ -79,9 +86,12 @@
     Promise
       .resolve(service.validateTeam(request.body))
       .then((res) => {
+        logger.debug('Team request is valid');
         next();
       }, (err) => {
+        logger.debug('Team request is invalid');
         response.status(400).send(err);
+        next();
       });
   }
 

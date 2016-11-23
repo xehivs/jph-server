@@ -1,28 +1,30 @@
 (function () {
-    'use strict';
-    
-    require('app-module-path').addPath(__dirname);
-    
-    let express = require('express');
-    let app = express();
-    let bodyParser = require('body-parser');
-    let mongoose = require('mongoose');
+  'use strict';
 
-    mongoose.connect('localhost:27017/jellypizzahack');
+  require('app-module-path').addPath(__dirname);
 
-    let main = require('routes/main');
-    let participants = require('routes/participants');
-    let teams = require('routes/teams');
+  let express = require('express');
+  let bodyParser = require('body-parser');
+  let mongoose = require('mongoose');
+  let logger = require('logger');
 
-    app.use(bodyParser.urlencoded({ extended: true }));
-    app.use(bodyParser.json());
+  let app = express();
 
-    let port = process.env.PORT || 3000;
+  mongoose.connect('localhost:27017/jellypizzahack');
 
-    app.use('/', main);
-    app.use('/participant', participants);
-    app.use('/team', teams);
+  let main = require('routes/main');
+  let participants = require('routes/participants');
+  let teams = require('routes/teams');
 
-    app.listen(port);
-    console.log('Listening on port: ' + port);
+  app.use(bodyParser.urlencoded({extended: true}));
+  app.use(bodyParser.json());
+
+  let port = process.env.PORT || 3000;
+
+  app.use('/', main);
+  app.use('/participant', participants);
+  app.use('/team', teams);
+
+  app.listen(port);
+  logger.info(`Listening on port ${port}`);
 })();

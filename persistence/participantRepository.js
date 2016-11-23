@@ -54,6 +54,16 @@
         });
       });
     }
+
+    deleteTeamReference(email) {
+      return new Promise((resolve, reject) => {
+        Participant.update({email: email}, {$unset: {team: 1}}, (err, result) => {
+          if(err)
+            return reject(err);
+          resolve(result);
+        });
+      });
+    }
   }
 
   module.exports = ParticipantRepository;

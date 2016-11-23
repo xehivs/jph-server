@@ -12,6 +12,7 @@
   router.post(NEW_TEAM_URL, checkRequest, newTeamPost);
   router.get(TEAM_URL, getValidatedTeam, getMemberDetails, teamGet);
   router.delete(TEAM_URL, getValidatedTeam, teamDelete);
+  router.update(TEAM_URL, getValidatedTeam, teamUpdate);
 
   let service = new TeamService();
 
@@ -36,6 +37,10 @@
         response(400);
         next();
       })
+  }
+
+  function teamUpdate(request, response, next) {
+    //TODO:Implement
   }
 
   function getValidatedTeam(request, response, next) {

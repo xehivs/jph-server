@@ -6,17 +6,18 @@
   let router = express.Router();
 
   let ParticipantService = require('services/participantService');
-  let ParticipantValidator = require('validators/participantValidator');
 
   let NEW_PARTICIPANT_URL = '/';
   let PARTICIPANT_URL = '/:participantId';
 
-  router.post(NEW_PARTICIPANT_URL, checkRequestData, checkEmailPattern, checkEmailAvailability, newParticipantPost);
-  router.get(PARTICIPANT_URL, checkCredentials, participantGet);
-  router.delete(PARTICIPANT_URL, checkCredentials, participantDelete);
+  router.post(NEW_PARTICIPANT_URL, checkRequest, newParticipantPost);
+  router.get(PARTICIPANT_URL, getValidatedParticipant, participantGet);
+  router.delete(PARTICIPANT_URL, getValidatedParticipant, participantDelete);
+
+  let service = new ParticipantService();
 
   function newParticipantPost(request, response, next) {
-    ParticipantService.saveParticipant(request.body);
+    service.saveParticipant(request.body);
     response.sendStatus(201);
     next();
   }
@@ -28,18 +29,18 @@
 
   function participantDelete(request, response, next) {
     Promise
-      .resolve(ParticipantService.deleteParticipant(request.participant.id))
+      .resolve(service.deleteParticipant(request.participant.id))
       .then((res) => {
         response.status(200).send(res);
         next();
-      }, (err) => {
+      }, () => {
         response.status(400);
       });
   }
 
-  function checkCredentials(request, response, next) {
+  function getValidatedParticipant(request, response, next) {
     Promise
-      .resolve(ParticipantValidator.checkCredentials(request.params.participantId))
+      .resolve(service.getValidatedParticipant(request.params.participantId))
       .then((res) => {
           request.participant = {
             id: res.uuid,
@@ -54,31 +55,17 @@
         });
   }
 
-  function checkEmailPattern(request, response, next) {
-    if (ParticipantValidator.isEmailValid(request.body.email))
-      next();
-    else{
-      response.sendStatus(400);
-    }
-  }
-
-  function checkEmailAvailability(request, response, next) {
+  function checkRequest(request, response, next) {
     Promise
-      .resolve(ParticipantValidator.isEmailAvailable(request.body.email))
-      .then(() => {
-          next();
-        },
-        () => {
-          response.sendStatus(400);
-        });
+      .resolve(service.validateData(request.body))
+      .then((res) => {
+        next();
+      })
+      .catch((err) => {
+        response.status(400).send(err);
+      })
   }
 
-  function checkRequestData(request, response, next) {
-    if(ParticipantValidator.isRequestDataOk(request.body))
-      next();
-    else
-      response.sendStatus(400);
-  }
 
   module.exports = router;
 })();

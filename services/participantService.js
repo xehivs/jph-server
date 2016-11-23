@@ -2,17 +2,52 @@
   'use strict';
 
   let Participant = require('persistence/models/participantEntity');
+  let ParticipantValidator = require('validators/participantValidator');
   let TeamRepository = require('persistence/teamRepository');
   let ParticipantRepository = require('persistence/participantRepository');
   let uuid = require('uuid');
 
   class ParticipantService {
 
-    static saveParticipant(participant, teamName) {
-      ParticipantService.makeParticipant(participant, teamName).save();
+    constructor() {
+      this.participantRepository = new ParticipantRepository();
+      this.teamRepository = new TeamRepository();
+      this.participantValidator = new ParticipantValidator();
     }
 
-    static makeParticipant(member, teamName) {
+    validateData(participant) {
+      return new Promise((resolve, reject) => {
+        Promise.all([
+          this.participantValidator.isRequestDataOk(participant),
+          this.participantValidator.isDateCorrect(participant.birth_date),
+          this.participantValidator.isNotTooOld(participant.birth_date),
+          this.participantValidator.isEmailValid(participant.email),
+          this.participantValidator.isEmailAvailable(participant.email)
+        ]).then((res) => {
+          resolve(res);
+        }).catch((err) => {
+          reject(err);
+        })
+      });
+    }
+
+    getValidatedParticipant(participantId) {
+      return new Promise((resolve, reject) => {
+        Promise
+          .resolve(this.participantValidator.checkCredentials(participantId))
+          .then((res) => {
+            resolve(res);
+          }, (err) => {
+            reject(err);
+          })
+      });
+    }
+
+    saveParticipant(participant, teamName) {
+      this.makeParticipant(participant, teamName).save();
+    }
+
+    makeParticipant(member, teamName) {
       let participant = new Participant();
       participant.uuid = uuid.v4();
       participant.name = member.name;
@@ -22,10 +57,10 @@
       return participant;
     }
 
-    static deleteParticipant(participantId) {
+    deleteParticipant(participantId) {
       return new Promise((resolve, reject) => {
         Promise
-          .all([ParticipantService.deleteParticipantFromDatabase(participantId), ParticipantService.cleanupAfterDelete(participantId)])
+          .all([this.deleteParticipantFromDatabase(participantId), this.cleanUpAfterDelete(participantId)])
           .then((res) => {
             resolve(res);
           }, (err) => {
@@ -34,10 +69,10 @@
       });
     }
 
-    static deleteParticipantFromDatabase(participantId) {
+    deleteParticipantFromDatabase(participantId) {
       return new Promise((resolve, reject) => {
         Promise
-          .resolve(ParticipantRepository.deleteParticipantById(participantId))
+          .resolve(this.participantRepository.deleteParticipantById(participantId))
           .then((res) => {
             resolve(res)
           }, (err) => {
@@ -46,10 +81,10 @@
       });
     }
 
-    static cleanupAfterDelete(participantId) {
+    cleanUpAfterDelete(participantId) {
       return new Promise((resolve, reject) => {
         Promise
-          .resolve(TeamRepository.deleteParticipantReferences(participantId))
+          .resolve(this.teamRepository.deleteParticipantReferences(participantId))
           .then((res) => {
             resolve(res);
           }, (err) => {

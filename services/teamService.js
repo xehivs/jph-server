@@ -4,27 +4,102 @@
   let uuid = require('uuid');
 
   let Team = require('persistence/models/teamEntity');
+  let TeamValidator = require('validators/teamValidator');
   let ParticipantService = require('services/participantService');
   let ParticipantRepository = require('persistence/participantRepository');
+  let TeamRepository = require('persistence/teamRepository');
 
   class TeamService {
-    static saveTeam(team) {
-      let participants = TeamService._exactParticipants(team.members, team.name);
-      TeamService._saveParticipants(participants);
-      TeamService._createTeam(team.name, TeamService._getMemberUuids(participants)).save();
+
+    constructor() {
+      this.participantRepository = new ParticipantRepository();
+      this.teamRepository = new TeamRepository();
+      this.teamValidator = new TeamValidator();
+      this.participantService = new ParticipantService();
     }
 
-    static getMemberDetails(members) {
+    validateTeam(team) {
+      return new Promise((resolve, reject) => {
+        Promise.all([
+          this.teamValidator.isRequestDataOk(team),
+          this.teamValidator.isEveryDateCorrect(team.members),
+          this.teamValidator.isEveryMemberInProperAge(team.members),
+          this.teamValidator.isEveryEmailPatternCorrect(team.members),
+          this.teamValidator.isEveryEmailAvailable(team.members),
+          this.teamValidator.isNameAvailable(team.name)
+        ]).then((res) => {
+          resolve(res);
+        }).catch((err) => {
+          reject(err);
+        })
+      });
+    }
+
+    getValidatedTeam(teamId) {
+      return new Promise((resolve, reject) => {
+        Promise
+          .resolve(this.teamValidator.getValidatedTeam(teamId))
+          .then((res) => {
+            resolve(res);
+          }, (err) => {
+            reject(err);
+          })
+      });
+    }
+
+    saveTeam(team) {
+      let participants = this._exactParticipants(team.members, team.name);
+      this._saveParticipants(participants);
+      this._createTeam(team.name, this._getMemberUuids(participants)).save();
+    }
+
+    getMemberDetails(members) {
       return new Promise((resolve) => {
         Promise
-          .resolve(ParticipantRepository.findParticipantByEmailArray(TeamService._prepareUuidQuery(members)))
+          .resolve(this.participantRepository.findParticipantByEmailArray(this._prepareUuidQuery(members)))
           .then((members) => {
-            resolve(TeamService._formatMembers(members));
+            resolve(this._formatMembers(members));
           });
       });
     }
 
-    static _formatMembers(members) {
+    deleteTeam(teamId, teamName) {
+      return new Promise((resolve, reject) => {
+        Promise
+          .all([this._deleteTeamFromDatabase(teamId), this._cleanUpAfterDelete(teamName)])
+          .then((res) => {
+            resolve(res);
+          }, (err) => {
+            reject(err);
+          });
+      });
+    }
+
+    _deleteTeamFromDatabase(teamId) {
+      return new Promise((resolve, reject) => {
+        Promise
+          .resolve(this.teamRepository.deleteTeam(teamId))
+          .then((res) => {
+            resolve(res);
+          }, (err) => {
+            reject(err);
+          });
+      });
+    }
+
+    _cleanUpAfterDelete(teamName) {
+      return new Promise((resolve, reject) => {
+        Promise
+          .resolve(this.participantRepository.deleteTeamReferences(teamName))
+          .then((res) => {
+            resolve(res);
+          }, (err) => {
+            reject(err);
+          })
+      });
+    }
+
+    _formatMembers(members) {
       let arr = [];
       members.forEach((member) => {
         arr.push({
@@ -36,7 +111,7 @@
       return arr;
     }
 
-    static _prepareUuidQuery(members) {
+    _prepareUuidQuery(members) {
       let arr = [];
       members.forEach((member) => {
         arr.push({uuid: member});
@@ -44,29 +119,29 @@
       return arr;
     }
 
-    static _exactParticipants(members, teamName) {
+    _exactParticipants(members, teamName) {
       let participants = [];
-      members.forEach(function (member) {
-        participants.push(ParticipantService.makeParticipant(member, teamName));
+      members.forEach((member) => {
+        participants.push(this.participantService.makeParticipant(member, teamName));
       });
       return participants;
     }
 
-    static _getMemberUuids(members) {
+    _getMemberUuids(members) {
       let arr = [];
       members.forEach((member) => {
-          arr.push(member.uuid);
+        arr.push(member.uuid);
       });
       return arr;
     }
 
-    static _saveParticipants(participants) {
+    _saveParticipants(participants) {
       participants.forEach(function (participant) {
         participant.save();
       });
     }
 
-    static _createTeam(teamName, participants) {
+    _createTeam(teamName, participants) {
       let team = new Team();
 
       team.name = teamName;

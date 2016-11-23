@@ -5,16 +5,18 @@
   let router = express.Router();
 
   let TeamService = require('services/teamService');
-  let TeamValidator = require('validators/teamValidator');
 
   let NEW_TEAM_URL = '/';
   let TEAM_URL = '/:teamId';
 
-  router.post(NEW_TEAM_URL, checkRequestData, checkNameAvailability, checkEmailsPattern, checkEmailsAvailability, newTeamPost);
-  router.get(TEAM_URL, checkCredentials, getMemberDetails, teamGet);
+  router.post(NEW_TEAM_URL, checkRequest, newTeamPost);
+  router.get(TEAM_URL, getValidatedTeam, getMemberDetails, teamGet);
+  router.delete(TEAM_URL, getValidatedTeam, teamDelete);
+
+  let service = new TeamService();
 
   function newTeamPost(request, response, next) {
-    TeamService.saveTeam(request.body);
+    service.saveTeam(request.body);
     response.sendStatus(201);
     next();
   }
@@ -24,9 +26,21 @@
     next();
   }
 
-  function checkCredentials(request, response, next) {
+  function teamDelete(request, response, next) {
     Promise
-      .resolve(TeamValidator.checkCredentials(request.params.teamId))
+      .resolve(service.deleteTeam(request.team.id, request.team.name))
+      .then(() => {
+        response.status(200).send('Successfully deleted team');
+        next();
+      }, () => {
+        response(400);
+        next();
+      })
+  }
+
+  function getValidatedTeam(request, response, next) {
+    Promise
+      .resolve(service.getValidatedTeam(request.params.teamId))
       .then((res) => {
           request.team = {
             id: res.uuid,
@@ -42,48 +56,21 @@
 
   function getMemberDetails(request, response, next) {
     Promise
-      .resolve(TeamService.getMemberDetails(request.team.members))
+      .resolve(service.getMemberDetails(request.team.members))
       .then((res) => {
         request.team.members = res;
         next();
       });
   }
 
-  function checkNameAvailability(request, response, next) {
+  function checkRequest(request, response, next) {
     Promise
-      .resolve(TeamValidator.isNameAvailable(request.body.name))
-      .then(() => {
-          next();
-        },
-        () => {
-          response.sendStatus(400);
-        });
-  }
-
-  function checkEmailsPattern(request, response, next) {
-    if (TeamValidator.isEveryEmailPatternCorrect(request.body.members)) {
-      next()
-    } else {
-      response.sendStatus(400);
-    }
-  }
-
-  function checkEmailsAvailability(request, response, next) {
-    Promise
-      .resolve(TeamValidator.isEveryEmailAvailable(request.body.members))
-      .then(() => {
-          next();
-        },
-        () => {
-          response.sendStatus(400);
-        });
-  }
-
-  function checkRequestData(request, response, next) {
-    if(TeamValidator.isRequestDataOk(request.body))
-      next();
-    else
-      response.sendStatus(400);
+      .resolve(service.validateTeam(request.body))
+      .then((res) => {
+        next();
+      }, (err) => {
+        response.status(400).send(err);
+      });
   }
 
   module.exports = router;

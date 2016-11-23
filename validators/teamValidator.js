@@ -4,37 +4,44 @@
   let ParticipantValidator = require('validators/participantValidator');
   let ParticipantRepository = require('persistence/participantRepository');
   let TeamRepository = require('persistence/teamRepository');
+  let DateService = require('services/dateService');
 
   class TeamValidator {
-
-    static isEveryEmailPatternCorrect(members) {
-      members.forEach((member) => {
-        if (!ParticipantValidator.isEmailValid(member.email))
-          return false;
-      });
-
-      return true;
+    constructor() {
+      this.participantValidator = new ParticipantValidator();
+      this.participantRepository = new ParticipantRepository();
+      this.teamRepository = new TeamRepository();
     }
 
-    static isEveryEmailAvailable(members) {
+    isEveryEmailPatternCorrect(members) {
       return new Promise((resolve, reject) => {
-        if (TeamValidator._isDuplicateEmail(members))
+        members.forEach((member) => {
+          if (!this.participantValidator.isEmailValid(member.email))
+            return reject()
+        });
+        resolve();
+      });
+    }
+
+    isEveryEmailAvailable(members) {
+      return new Promise((resolve, reject) => {
+        if (this._isDuplicateEmail(members))
           reject('There are duplicate members in array');
 
         Promise
-          .resolve(ParticipantRepository.findParticipantByEmailArray(TeamValidator._prepareEmailQuery(members)))
+          .resolve(this.participantRepository.findParticipantByEmailArray(this._prepareEmailQuery(members)))
           .then((res) => {
             if (res.length)
-              reject(`${res} are used already`);
+              reject(`Some emails are in use already`);
             resolve();
           });
       });
     }
 
-    static isNameAvailable(name) {
+    isNameAvailable(name) {
       return new Promise((resolve, reject) => {
         Promise
-          .resolve(TeamRepository.findTeamByName(name))
+          .resolve(this.teamRepository.findTeamByName(name))
           .then((res) => {
             if (res.length)
               reject('Team name is already in use');
@@ -43,35 +50,66 @@
       });
     }
 
-    static checkCredentials(uuid) {
+    getValidatedTeam(uuid) {
       return new Promise((resolve, reject) => {
         Promise
-          .resolve(TeamRepository.findTeamById(uuid))
+          .resolve(this.teamRepository.findTeamById(uuid))
           .then((res) => {
             if (res)
-              resolve(res);
-             else
-              reject('Wrong uuid');
+              return resolve(res);
+            reject('No team exists under given id');
           });
       });
     }
 
-    static isRequestDataOk(team) {
-      if(team.name && team.members)
-        team.members.forEach((member) => {
-          if(!ParticipantValidator.isRequestDataOk(member))
-            return false
-        });
-      return true;
+    isRequestDataOk(team) {
+      return new Promise((resolve, reject) => {
+        if(team.name && team.members && this._isMembersRequestOk(team.members))
+          return resolve();
+        reject('Missing some properties');
+      });
     }
 
-    static _isDuplicateEmail(members) {
+    _isMembersRequestOk(members) {
+      let returnValue = true;
+      let properties = ['email', 'name', 'surname', 'birth_date', 'school', 'department',
+        'field_of_study', 'album_number', 'year', 'size'];
+      members.forEach((member) => {
+        properties.forEach((property) => {
+          if(!member.hasOwnProperty(property))
+            returnValue = false;
+        });
+      });
+      return returnValue;
+    }
+
+    isEveryMemberInProperAge(members) {
+      return new Promise((resolve, reject) => {
+        members.forEach((member) => {
+          if(!DateService.isNotOlderThan(30, member.birth_date))
+            return reject(`Someone is too old`);
+        });
+        resolve();
+      });
+    }
+
+    isEveryDateCorrect(members) {
+      return new Promise((resolve, reject) => {
+        members.forEach((member) => {
+          if(!DateService.isDateCorrect(member.birth_date))
+            return reject('One of the dates is in incorrect format');
+        });
+        resolve();
+      });
+    }
+
+    _isDuplicateEmail(members) {
       !!members.reduce((a, b) => {
         return a.email !== b.email;
       });
     }
 
-    static _prepareEmailQuery(members) {
+    _prepareEmailQuery(members) {
       let arr = [];
       members.forEach((member) => {
         arr.push({email: member.email});

@@ -5,7 +5,7 @@
 
   class ParticipantRepository {
 
-    static findParticipantById(uuid) {
+    findParticipantById(uuid) {
       return new Promise((resolve, reject) => {
         Participant.findOne({uuid: uuid}, (err, result) => {
           if (err)
@@ -15,7 +15,7 @@
       });
     }
 
-    static findParticipantByEmail(email) {
+    findParticipantByEmail(email) {
       return new Promise((resolve, reject) => {
         Participant.findOne({email: email}, (err, result) => {
           if (err)
@@ -25,7 +25,7 @@
       });
     }
 
-    static findParticipantByEmailArray(emailArray) {
+    findParticipantByEmailArray(emailArray) {
       return new Promise((resolve, reject) => {
         Participant.find({$or: emailArray}, (err, result) => {
           if (err)
@@ -35,13 +35,23 @@
       });
     }
 
-    static deleteParticipantById(uuid) {
+    deleteParticipantById(uuid) {
       return new Promise((resolve, reject) => {
           Participant.remove({uuid: uuid}, (err, result) => {
             if (err)
               return reject(err);
             resolve(result);
           });
+      });
+    }
+
+    deleteTeamReferences(teamName) {
+      return new Promise((resolve, reject) => {
+        Participant.update({team: teamName}, {$unset: {team: 1}}, {multi: true}, (err, result) => {
+          if(err)
+            return reject(err);
+          resolve(result);
+        });
       });
     }
   }

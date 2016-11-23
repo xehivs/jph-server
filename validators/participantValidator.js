@@ -2,42 +2,70 @@
   'use strict';
 
   let ParticipantRepository = require('persistence/participantRepository');
+  let DateService = require('services/dateService');
 
   class ParticipantValidator {
 
-    static isEmailValid(email) {
-      let emailRegExp = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-      return emailRegExp.test(email);
+    constructor() {
+      this.participantRepository = new ParticipantRepository();
     }
 
-    static isEmailAvailable(email) {
+    isEmailValid(email) {
+      let emailRegExp = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
       return new Promise((resolve, reject) => {
-        Promise.resolve(ParticipantRepository.findParticipantByEmail(email))
+        if (emailRegExp.test(email))
+          return resolve();
+        reject('Email format is invalid');
+      });
+    }
+
+    isEmailAvailable(email) {
+      return new Promise((resolve, reject) => {
+        Promise.resolve(this.participantRepository.findParticipantByEmail(email))
           .then((res) => {
             if (res)
-              reject('Email is already used');
-            else
-              resolve();
+              return reject('Email is already in use');
+            resolve();
           });
       });
     }
 
-    static isRequestDataOk(participant) {
-      return !!(participant.email && participant.name && participant.surname
-      && participant.birth_date && participant.school && participant.department
-      && participant.field_of_study && participant.album_number && participant.year
-      && participant.size);
+    isRequestDataOk(participant) {
+      let properties = ['email', 'name', 'surname', 'birth_date', 'school', 'department',
+        'field_of_study', 'album_number', 'year', 'size'];
+      return new Promise((resolve, reject) => {
+        properties.forEach((property) => {
+          if(!participant.hasOwnProperty(property))
+            return reject(`Missing ${property} property`);
+        });
+        resolve();
+      });
     }
 
-    static checkCredentials(uuid) {
+    checkCredentials(uuid) {
       return new Promise((resolve, reject) => {
-        Promise.resolve(ParticipantRepository.findParticipantById(uuid))
+        Promise.resolve(this.participantRepository.findParticipantById(uuid))
           .then((res) => {
             if (res)
-              resolve(res);
-            else
-              reject('Wrong uuid');
+              return resolve(res);
+            reject('No participant exist under given id');
           });
+      });
+    }
+
+    isNotTooOld(birthDate) {
+      return new Promise((resolve, reject) => {
+        if(DateService.isNotOlderThan(30, birthDate))
+          return resolve();
+        reject('Too old participant');
+      });
+    }
+
+    isDateCorrect(date) {
+      return new Promise((resolve, reject) => {
+        if(DateService.isDateCorrect(date))
+          return resolve();
+        reject('Wrong date pattern');
       });
     }
   }

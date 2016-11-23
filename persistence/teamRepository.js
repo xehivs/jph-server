@@ -5,7 +5,7 @@
 
   class TeamRepository {
 
-    static findTeamById(uuid) {
+    findTeamById(uuid) {
       return new Promise((resolve, reject) => {
         Team.findOne({uuid: uuid}, (err, result) => {
           if (err)
@@ -15,7 +15,7 @@
       });
     }
 
-    static findTeamByName(name) {
+    findTeamByName(name) {
       return new Promise((resolve, reject) => {
         Team.find({name: name}, (err, result) => {
           if(err)
@@ -25,13 +25,23 @@
       });
     }
 
-    static deleteParticipantReferences(participantId) {
+    deleteParticipantReferences(participantId) {
       return new Promise((resolve, reject) => {
           Team.update({members: participantId}, {$pull: {members: participantId}}, (err, result) => {
             if(err)
               return reject(err);
             resolve(result);
           });
+      });
+    }
+
+    deleteTeam(teamId) {
+      return new Promise((resolve, reject) => {
+        Team.remove({uuid: teamId}, (err, result) => {
+          if(err)
+            return reject(err);
+          resolve(result);
+        });
       });
     }
   }

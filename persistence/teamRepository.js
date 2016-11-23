@@ -44,6 +44,16 @@
         });
       });
     }
+
+    deleteMemberFromTeam(teamId, memberId) {
+      return new Promise((resolve, reject) => {
+        Team.update({uuid: teamId}, {$pull: {members: memberId}}, (err, result) => {
+          if(err)
+            return reject(err);
+          resolve(result);
+        });
+      });
+    }
   }
 
   module.exports = TeamRepository;

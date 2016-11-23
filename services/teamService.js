@@ -18,6 +18,62 @@
       this.participantService = new ParticipantService();
     }
 
+    kickMember(team, memberEmail) {
+      return new Promise((resolve, reject) => {
+        Promise
+          .all([
+            this._removeTeamPropertyFromParticipant(memberEmail),
+            this._getMemberFromTeam(team.uuid, memberEmail)
+          ]).then((res) => {
+            resolve(res);
+          }).catch((err) => {
+            reject(err);
+          });
+      });
+    }
+
+    _removeTeamPropertyFromParticipant(memberEmail) {
+      return new Promise((resolve, reject) => {
+        Promise
+          .resolve(this.participantRepository.deleteTeamReference(memberEmail))
+          .then((res) => {
+            resolve(res);
+          }).catch((err) => {
+            reject(err);
+          })
+      });
+    }
+
+    _getMemberFromTeam(teamId, email) {
+      return new Promise((resolve, reject) => {
+        Promise
+          .resolve(this.participantRepository.findParticipantByEmail(email))
+          .then((res) => {
+            Promise
+              .resolve(this._deleteMemberReference(teamId, email))
+              .then((res) => {
+                resolve(res);
+              }).catch((err) => {
+                reject(err);
+              });
+          }).catch((err) => {
+            reject(err);
+          });
+      });
+    }
+
+    _deleteMemberReference(teamId, memberId) {
+      return new Promise((resolve, reject) => {
+        Promise
+          .resolve(this.teamRepository.deleteMemberFromTeam(teamId, memberId))
+          .then((res) => {
+            resolve(res)
+          }).catch((err) => {
+            reject(err);
+          });
+      });
+    }
+
     validateTeam(team) {
       return new Promise((resolve, reject) => {
         Promise.all([
@@ -114,7 +170,7 @@
     _prepareUuidQuery(members) {
       let arr = [];
       members.forEach((member) => {
-        arr.push({uuid: member});
+        arr.push({ uuid: member });
       });
       return arr;
     }

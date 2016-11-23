@@ -40,7 +40,14 @@
   }
 
   function teamUpdate(request, response, next) {
-    //TODO:Implement
+    Promise
+      .resolve(this.teamService.kickMember(request.team.name, request.body.participantEmail))
+      .then((res) => {
+        response.status(200).send(res);
+        next();
+      }).catch((err) => {
+        reponse.sendStatus(400);
+      });
   }
 
   function getValidatedTeam(request, response, next) {

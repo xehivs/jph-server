@@ -16,7 +16,57 @@
     }
 
     changeTeam(participantId, teamId) {
+      return new Promise((resolve, reject) => {
+        Promise
+          .resolve(this.teamRepository.findTeamById(teamId))
+          .then((res) => {
+            Promise
+              .resolve(this.changeTeamAfterGotTeam(participantId, res))
+              .then((res) => {
+                resolve(res);
+              })
+              .catch((err) => {
+                reject(err);
+              })
+          })
+          .catch((err) => {
+            reject(err);
+          })
+      });
+    }
 
+    changeTeamAfterGotTeam(participantId, team) {
+      return new Promise((resolve, reject) => {
+        Promise
+          .resolve(this.teamRepository.deleteParticipantReferences(participantId))
+          .then(() => {
+            Promise
+              .resolve(this._changeCurrentTeam(participantId, team))
+              .then((res) => {
+                resolve(res);
+              })
+              .catch((err) => {
+                reject(err);
+              });
+          })
+          .catch((err) => {
+            reject(err);
+          });
+      });
+    }
+
+    _changeCurrentTeam(participantId, team) {
+      return new Promise((resolve, reject) => {
+        Promise
+          .all([
+            this.participantRepository.changeTeam(participantId, team.name),
+            this.teamRepository.pushNewParticipant(team.uuid, participantId)
+          ]).then((res) => {
+            resolve(res);
+          }).catch((err) => {
+            reject(err);
+          });
+      });
     }
 
     validateData(participant) {

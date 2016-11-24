@@ -57,6 +57,17 @@
         });
       });
     }
+
+    pushNewParticipant(teamId, memberId) {
+      logger.debug(`Adding ${memberId} to ${teamId}`);
+      return new Promise((resolve, reject) => {
+        Team.update({uuid: teamId}, {$push: {members: memberId}}, (err, result) => {
+          if(err)
+            reject(err);
+          resolve(result);
+        });
+      });
+    }
   }
 
   module.exports = TeamRepository;

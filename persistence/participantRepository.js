@@ -64,6 +64,16 @@
         });
       });
     }
+
+    changeTeam(id, teamName) {
+      return new Promise((resolve, reject) => {
+        Participant.update({uuid: id}, {team: teamName}, (err, result) => {
+          if(err)
+            return reject(err);
+          resolve(result);
+        });
+      });
+    }
   }
 
   module.exports = ParticipantRepository;

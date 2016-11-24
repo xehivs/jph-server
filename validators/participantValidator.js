@@ -2,12 +2,15 @@
   'use strict';
 
   let ParticipantRepository = require('persistence/participantRepository');
+  let TeamRepository = require('persistence/teamRepository');
   let DateService = require('services/dateService');
+  let logger = require('logger');
 
   class ParticipantValidator {
 
     constructor() {
       this.participantRepository = new ParticipantRepository();
+      this.teamRepository = new TeamRepository();
     }
 
     isEmailValid(email) {
@@ -66,6 +69,21 @@
         if(DateService.isDateCorrect(date))
           return resolve();
         reject('Wrong date pattern');
+      });
+    }
+
+    isTeamLimitReached(teamId) {
+      return new Promise((resolve, reject) => {
+        Promise
+          .resolve(this.teamRepository.findTeamById(teamId))
+          .then((res) => {
+            if(res.members.length >= 4)
+              return reject('Team is full');
+            resolve(res);
+          })
+          .catch((err) => {
+            reject(err)
+          });
       });
     }
   }

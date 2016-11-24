@@ -55,9 +55,9 @@
       });
     }
 
-    deleteTeamReference(email) {
+    deleteTeamReference(email, teamName) {
       return new Promise((resolve, reject) => {
-        Participant.update({email: email}, {$unset: {team: 1}}, (err, result) => {
+        Participant.update({email: email, team: teamName}, {$unset: {team: 1}}, (err, result) => {
           if(err)
             return reject(err);
           resolve(result);

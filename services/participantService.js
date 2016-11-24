@@ -15,6 +15,10 @@
       this.participantValidator = new ParticipantValidator();
     }
 
+    changeTeam(participantId, teamId) {
+
+    }
+
     validateData(participant) {
       return new Promise((resolve, reject) => {
         Promise.all([

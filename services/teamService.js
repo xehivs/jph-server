@@ -19,12 +19,12 @@
       this.participantService = new ParticipantService();
     }
 
-    kickMember(teamId, memberEmail) {
+    kickMember(team, memberEmail) {
       return new Promise((resolve, reject) => {
         Promise
           .all([
-            this._removeTeamPropertyFromParticipant(memberEmail),
-            this._getMemberFromTeam(teamId, memberEmail)
+            this._removeTeamPropertyFromParticipant(memberEmail, team.name),
+            this._getMemberFromTeam(team.id, memberEmail)
           ]).then((res) => {
             resolve(res);
           }).catch((err) => {
@@ -33,7 +33,7 @@
       });
     }
 
-    _removeTeamPropertyFromParticipant(memberEmail) {
+    _removeTeamPropertyFromParticipant(memberEmail, teamName) {
       return new Promise((resolve, reject) => {
         Promise
           .resolve(this.participantRepository.deleteTeamReference(memberEmail))

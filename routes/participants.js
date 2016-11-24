@@ -14,8 +14,13 @@
   router.post(NEW_PARTICIPANT_URL, checkRequest, newParticipantPost);
   router.get(PARTICIPANT_URL, getValidatedParticipant, participantGet);
   router.delete(PARTICIPANT_URL, getValidatedParticipant, participantDelete);
+  router.put(PARTICIPANT_URL, participantPut);
 
   let service = new ParticipantService();
+
+  function participantPut(request, response, next) {
+
+  }
 
   function newParticipantPost(request, response, next) {
     service.saveParticipant(request.body);

@@ -45,7 +45,7 @@
 
   function teamUpdate(request, response, next) {
     Promise
-      .resolve(service.kickMember(request.team.id, request.body.participantEmail))
+      .resolve(service.kickMember(request.team, request.body.participantEmail))
       .then((res) => {
         response.status(200).send(res);
         logger.debug('PUT - successfully removed member from the team');

@@ -2,6 +2,7 @@
   'use strict';
 
   let Team = require('persistence/models/teamEntity');
+  let logger = require('logger');
 
   class TeamRepository {
 
@@ -36,6 +37,7 @@
     }
 
     deleteTeam(teamId) {
+      logger.debug(`Removing ${teamId}`);
       return new Promise((resolve, reject) => {
         Team.remove({uuid: teamId}, (err, result) => {
           if(err)
@@ -46,6 +48,7 @@
     }
 
     deleteMemberFromTeam(teamId, memberId) {
+      logger.debug(`Removing ${memberId} from ${teamId}`);
       return new Promise((resolve, reject) => {
         Team.update({uuid: teamId}, {$pull: {members: memberId}}, (err, result) => {
           if(err)

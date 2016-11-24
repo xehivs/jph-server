@@ -2,6 +2,7 @@
   'use strict';
 
   let uuid = require('uuid');
+  let logger = require('logger');
 
   let Team = require('persistence/models/teamEntity');
   let TeamValidator = require('validators/teamValidator');
@@ -18,12 +19,12 @@
       this.participantService = new ParticipantService();
     }
 
-    kickMember(team, memberEmail) {
+    kickMember(teamId, memberEmail) {
       return new Promise((resolve, reject) => {
         Promise
           .all([
             this._removeTeamPropertyFromParticipant(memberEmail),
-            this._getMemberFromTeam(team.uuid, memberEmail)
+            this._getMemberFromTeam(teamId, memberEmail)
           ]).then((res) => {
             resolve(res);
           }).catch((err) => {
@@ -37,6 +38,7 @@
         Promise
           .resolve(this.participantRepository.deleteTeamReference(memberEmail))
           .then((res) => {
+            logger.debug('Removed team property from participant');
             resolve(res);
           }).catch((err) => {
             reject(err);
@@ -50,8 +52,9 @@
           .resolve(this.participantRepository.findParticipantByEmail(email))
           .then((res) => {
             Promise
-              .resolve(this._deleteMemberReference(teamId, email))
+              .resolve(this._deleteMemberReference(teamId, res.uuid))
               .then((res) => {
+                logger.debug('Got member from team and deleted its reference');
                 resolve(res);
               }).catch((err) => {
                 reject(err);
@@ -67,6 +70,7 @@
         Promise
           .resolve(this.teamRepository.deleteMemberFromTeam(teamId, memberId))
           .then((res) => {
+            logger.debug('Deleted member from the team');
             resolve(res)
           }).catch((err) => {
             reject(err);

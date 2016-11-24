@@ -45,12 +45,13 @@
 
   function teamUpdate(request, response, next) {
     Promise
-      .resolve(this.teamService.kickMember(request.team.name, request.body.participantEmail))
+      .resolve(service.kickMember(request.team.id, request.body.participantEmail))
       .then((res) => {
         response.status(200).send(res);
+        logger.debug('PUT - successfully removed member from the team');
         next();
       }).catch((err) => {
-        reponse.sendStatus(400);
+        response.sendStatus(400);
       });
   }
 
@@ -85,13 +86,12 @@
   function checkRequest(request, response, next) {
     Promise
       .resolve(service.validateTeam(request.body))
-      .then((res) => {
+      .then(() => {
         logger.debug('Team request is valid');
         next();
       }, (err) => {
         logger.debug('Team request is invalid');
         response.status(400).send(err);
-        next();
       });
   }
 

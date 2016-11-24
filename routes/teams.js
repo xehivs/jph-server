@@ -18,8 +18,8 @@
   let service = new TeamService();
 
   function newTeamPost(request, response, next) {
-    service.saveTeam(request.body);
-    response.sendStatus(201);
+    let team = service.saveTeam(request.body);
+    response.status(201).send(team);
     logger.debug('POST - new team created successfully');
     next();
   }

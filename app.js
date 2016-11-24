@@ -10,7 +10,7 @@
 
   let app = express();
 
-  mongoose.connect('localhost:27017/jellypizzahack');
+  mongoose.connect('156.17.43.89:27017/jellypizzahack');
 
   let main = require('routes/main');
   let participants = require('routes/participants');
@@ -19,7 +19,7 @@
   app.use(bodyParser.urlencoded({extended: true}));
   app.use(bodyParser.json());
 
-  let port = process.env.PORT || 3000;
+  let port = process.env.PORT || 49152;
 
   app.use('/', main);
   app.use('/participant', participants);

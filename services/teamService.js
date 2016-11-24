@@ -110,7 +110,9 @@
     saveTeam(team) {
       let participants = this._exactParticipants(team.members, team.name);
       this._saveParticipants(participants);
-      this._createTeam(team.name, this._getMemberUuids(participants)).save();
+      let createdTeam = this._createTeam(team.name, this._getMemberUuids(participants));
+      createdTeam.save();
+      return createdTeam;
     }
 
     getMemberDetails(members) {

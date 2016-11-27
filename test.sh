@@ -9,9 +9,25 @@ echo ""
 echo "# Test GET /"
 curl $APPHOST
 echo ""
+echo ""
 
 echo "# Test POST /team"
-curl -i \
-    -H "Accept: application/json" \
-    -X POST -d "value":"30","type":"Tip 3","targetModule":"Target 3","configurationGroup":null,"name":"Configuration Deneme 3","description":null,"identity":"Configuration Deneme 3","version":0,"systemId":3,"active":true \
+curl \
+    --header "Content-Type: application/json" \
+    -X POST -d @team.json \
+    http://$APPHOST/team
+echo ""
+echo ""
+
+echo "# Re-POST /team"
+curl \
+    --header "Content-Type: application/json" \
+    -X POST -d @team.json \
+    http://$APPHOST/team
+echo ""; echo ""
+
+echo "# Second Re-POST /team"
+curl \
+    --header "Content-Type: application/json" \
+    -X POST -d @team.json \
     http://$APPHOST/team

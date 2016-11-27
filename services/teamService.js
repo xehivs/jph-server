@@ -42,7 +42,7 @@
             resolve(res);
           }).catch((err) => {
             reject(err);
-          })
+          });
       });
     }
 
@@ -71,7 +71,7 @@
           .resolve(this.teamRepository.deleteMemberFromTeam(teamId, memberId))
           .then((res) => {
             logger.debug('Deleted member from the team');
-            resolve(res)
+            resolve(res);
           }).catch((err) => {
             reject(err);
           });
@@ -91,7 +91,7 @@
           resolve(res);
         }).catch((err) => {
           reject(err);
-        })
+        });
       });
     }
 
@@ -103,7 +103,7 @@
             resolve(res);
           }, (err) => {
             reject(err);
-          })
+          });
       });
     }
 
@@ -157,7 +157,7 @@
             resolve(res);
           }, (err) => {
             reject(err);
-          })
+          });
       });
     }
 

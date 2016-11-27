@@ -165,6 +165,20 @@
       let arr = [];
       members.forEach((member) => {
         arr.push({
+          uuid: member.uuid,
+          name: member.name,
+          surname: member.surname,
+          email: member.email
+        });
+      });
+      return arr;
+    }
+
+    _formatTeam(members) {
+      let arr = [];
+      members.forEach((member) => {
+        arr.push({
+          uuid: member.uuid,
           name: member.name,
           surname: member.surname,
           email: member.email

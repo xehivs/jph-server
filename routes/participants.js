@@ -61,6 +61,7 @@
       .then((res) => {
           request.participant = {
             id: res.uuid,
+            uuid: res.uuid,
             name: res.name,
             surname: res.surname,
             team: res.team

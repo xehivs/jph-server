@@ -1,4 +1,4 @@
-# jph-server [![Code Climate](https://codeclimate.com/github/jellypizzahack/jph-server/badges/gpa.svg)](https://codeclimate.com/github/jellypizzahack/jph-server)
+# jph-server [![Code Climate](https://codeclimate.com/github/xehivs/jph-server/badges/gpa.svg)](https://codeclimate.com/github/xehivs/jph-server)
 ## Zapytania
 
 ### `GET /`

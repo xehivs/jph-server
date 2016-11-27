@@ -1,4 +1,8 @@
 # jph-server
+## Zapytania
+
+### `GET /`
+
 ## Required:
 1. ~~Add team~~
 2. ~~Add participant~~
